@@ -17,24 +17,80 @@
         android:layout_height="match_parent"
         android:weightSum="1">
 
-        <Button
-            android:text="Button"
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/buttonLoadPicture"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:text="Load picture"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/buttonLoadPicture"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginRight="97dp"
+                android:layout_marginEnd="97dp"
+                android:layout_weight="1" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:srcCompat="@mipmap/ic_launcher"
+                android:id="@+id/imageView"
+                android:background="@color/colorPrimary"
+                android:cropToPadding="false"
+                android:layout_weight="8.14" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="Scale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textViewScale"
+                android:layout_weight="1" />
+
+            <EditText
+                android:layout_width="242dp"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/editTextScale" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ToggleButton
+                android:text="Gyroscope enabled"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/toggleButtonGyroscopeEnabled"
+                android:layout_weight="1"
+                android:textOn="Gyroscope enabled"
+                android:textOff="Gyroscope disabled" />
+
+        </LinearLayout>
+
+        <Button
+            android:text="Go to display"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/buttonGoToDisplay"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_marginRight="97dp"
             android:layout_marginEnd="97dp" />
-
-        <ImageView
-            android:layout_width="223dp"
-            android:layout_height="26dp"
-            app:srcCompat="@mipmap/ic_launcher"
-            android:id="@+id/imageView"
-            android:layout_weight="0.26"
-            android:background="@color/colorPrimary" />
 
     </LinearLayout>
 

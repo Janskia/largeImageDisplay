@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -14,11 +15,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.TextViewCompat;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -27,15 +34,19 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class OptionsActivity extends Activity {
+    private final String SHARED_PREF_NAME = "com.janskia.largeImageDisplay";
 
-
-    private static final String TAG = "LargeImageDiplay";
+    public static final String TAG = "LargeImageDiplay";
     private static final int REQUEST_CODE_PERMISSION = 2;
     private static int RESULT_LOAD_IMAGE = 1;
 
+    private Options options;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        options = new Options();
+        loadFromSharedPreferences();
+
         super.onCreate(savedInstanceState);
         isStoragePermissionGranted();
 
@@ -43,7 +54,6 @@ public class OptionsActivity extends Activity {
 
         Button buttonLoadImage = (Button) findViewById(R.id.buttonLoadPicture);
         buttonLoadImage.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View arg0) {
 
@@ -52,6 +62,48 @@ public class OptionsActivity extends Activity {
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 Toast.makeText(getApplicationContext(),"started loading bitmap",Toast.LENGTH_SHORT);
                 startActivityForResult(i, RESULT_LOAD_IMAGE);
+            }
+        });
+
+        ToggleButton buttonGyroscopeEnabled = (ToggleButton) findViewById(R.id.toggleButtonGyroscopeEnabled);
+        buttonGyroscopeEnabled.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton toggleButton, boolean isChecked) {
+                options.setGyroscopeEnabled(toggleButton.isChecked());
+            }
+        });
+
+        TextView editTextScale = (TextView) findViewById(R.id.editTextScale);
+        editTextScale.addTextChangedListener(new TextWatcher() {
+
+            public void afterTextChanged(Editable s) {}
+
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+                try {
+                    options.setScale(Integer.parseInt(s.toString()));
+                }catch (Exception e){
+                    options.setScale(1);
+                }
+            }
+        });
+
+        Button buttonGoToDisplay = (Button) findViewById(R.id.buttonGoToDisplay);
+        final Activity optionsActivity = this;
+        buttonGoToDisplay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                saveToSharedPreferences();
+                Intent i = new Intent(optionsActivity, DisplayActivity.class);
+                i.putExtra(Options.SELECTED_SELECTED_IMAGE_PATH, options.getPath());
+                i.putExtra(Options.GYROSCOPE_ENABLED, options.isGyroscopeEnabled());
+                i.putExtra(Options.SELECTED_SCALE, options.getScale());
+                startActivity(i);
             }
         });
     }
@@ -71,22 +123,17 @@ public class OptionsActivity extends Activity {
                 cursor.moveToFirst();
 
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                String picturePath = cursor.getString(columnIndex);
+                options.setPath(cursor.getString(columnIndex));
                 cursor.close();
 
                 ImageView imageView = (ImageView) findViewById(R.id.imageView);
-                readFile(picturePath);
-                Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+                Bitmap bitmap = BitmapFactory.decodeFile(options.getPath());
                 imageView.setImageBitmap(bitmap);
                 imageView.setBackgroundColor(Color.rgb(255, 0, 0));
-                Toast.makeText(getApplicationContext(), "loaded bitmap", Toast.LENGTH_SHORT);
-                Toast.makeText(getApplicationContext(), "" + picturePath, Toast.LENGTH_SHORT);
             }else{
                 Log.v(TAG,"no permission!");
             }
         }
-
-
     }
 
     @Override
@@ -117,20 +164,20 @@ public class OptionsActivity extends Activity {
         }
     }
 
-    private void readFile(String path){
-        File file = new File(path);
-        int size = (int) file.length();
-        byte[] bytes = new byte[size];
-        try {
-            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
-            buf.read(bytes, 0, bytes.length);
-            buf.close();
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+
+    public void saveToSharedPreferences(){
+        SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(Options.SELECTED_SELECTED_IMAGE_PATH,options.getPath());
+        editor.putInt(Options.SELECTED_SCALE,options.getScale());
+        editor.putBoolean(Options.GYROSCOPE_ENABLED,options.isGyroscopeEnabled());
+        editor.commit();
+    }
+
+    public void loadFromSharedPreferences(){
+        SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
+        options.setPath(prefs.getString(Options.SELECTED_SELECTED_IMAGE_PATH,""));
+        options.setScale(prefs.getInt(Options.SELECTED_SCALE, 1));
+        options.setGyroscopeEnabled(prefs.getBoolean(Options.GYROSCOPE_ENABLED,false));
     }
 }
