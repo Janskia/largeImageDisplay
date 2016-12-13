@@ -10,6 +10,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -32,10 +33,10 @@ public class DisplayActivity extends AppCompatActivity implements SensorEventLis
     private float yCalibration;
     private float zCalibration;
 
-    private float xVelocity=0;
-    private float yVelocity=0;
+    private float xVelocity,yVelocity,xVelocity2,yVelocity2,xVelocity3,yVelocity3;
 
-    private float moveMultiplier = 6;
+
+    private float moveMultiplier = 1f;
     private ImageView imageView;
 
     private Options options;
@@ -43,6 +44,12 @@ public class DisplayActivity extends AppCompatActivity implements SensorEventLis
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        xVelocity=0;
+        yVelocity=0;
+        xVelocity2=0;
+        yVelocity2=0;
+        xVelocity3=0;
+        yVelocity3=0;
         options = new Options();
         setContentView(R.layout.activity_display);
         Intent intent = getIntent();
@@ -77,6 +84,7 @@ public class DisplayActivity extends AppCompatActivity implements SensorEventLis
                 zCalibration = z;
                 isCalibrated=true;
             }
+            Log.d("ACCEREROMETERx","acceleration x:"+x);
             MoveImage(x,y);
         }
     }
@@ -84,7 +92,8 @@ public class DisplayActivity extends AppCompatActivity implements SensorEventLis
     private void MoveImage(float x,float y){
         xVelocity-=x;
         yVelocity+=y;
-
+        Log.d("VELOCITYx","velocity x:"+x);
+        Log.d("VELOCITYy","velocity y:"+y);
         imageView.setTranslationX(imageView.getTranslationX()+xVelocity*moveMultiplier);
         imageView.setTranslationY(imageView.getTranslationY()+yVelocity*moveMultiplier);
     }
@@ -104,5 +113,30 @@ public class DisplayActivity extends AppCompatActivity implements SensorEventLis
     protected void onResume() {
         super.onResume();
         senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        int action = MotionEventCompat.getActionMasked(event);
+        switch(action){
+            case (MotionEvent.ACTION_DOWN) :
+                resetImagePosition();
+                Log.d("DEBUG_TAG","DOWN");
+                break;
+            case(MotionEvent.ACTION_BUTTON_PRESS):
+                Log.d("DEBUG_TAG","PREDD");
+                break;
+            case(MotionEvent.ACTION_MOVE):
+                Log.d("DEBUG_TAG","MOVE!");
+                break;
+        }
+        return super.onTouchEvent(event);
+    }
+
+    private void resetImagePosition(){
+        xVelocity=0;
+        yVelocity=0;
+        imageView.setTranslationX(0);
+        imageView.setTranslationY(0);
     }
 }

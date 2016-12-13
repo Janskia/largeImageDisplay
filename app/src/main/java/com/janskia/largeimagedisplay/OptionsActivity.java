@@ -42,6 +42,11 @@ public class OptionsActivity extends Activity {
 
     private Options options;
 
+    private Button buttonLoadImage;
+    private ToggleButton buttonGyroscopeEnabled;
+    private TextView editTextScale;
+    private Button buttonGoToDisplay ;
+    private ImageView imageView;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         options = new Options();
@@ -52,7 +57,12 @@ public class OptionsActivity extends Activity {
 
         setContentView(R.layout.activity_options);
 
-        Button buttonLoadImage = (Button) findViewById(R.id.buttonLoadPicture);
+        buttonLoadImage = (Button) findViewById(R.id.buttonLoadPicture);
+        buttonGyroscopeEnabled = (ToggleButton) findViewById(R.id.toggleButtonGyroscopeEnabled);
+        editTextScale = (TextView) findViewById(R.id.editTextScale);
+        buttonGoToDisplay = (Button) findViewById(R.id.buttonGoToDisplay);
+        imageView = (ImageView) findViewById(R.id.imageView);
+
         buttonLoadImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
@@ -65,7 +75,6 @@ public class OptionsActivity extends Activity {
             }
         });
 
-        ToggleButton buttonGyroscopeEnabled = (ToggleButton) findViewById(R.id.toggleButtonGyroscopeEnabled);
         buttonGyroscopeEnabled.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton toggleButton, boolean isChecked) {
@@ -73,7 +82,6 @@ public class OptionsActivity extends Activity {
             }
         });
 
-        TextView editTextScale = (TextView) findViewById(R.id.editTextScale);
         editTextScale.addTextChangedListener(new TextWatcher() {
 
             public void afterTextChanged(Editable s) {}
@@ -93,7 +101,6 @@ public class OptionsActivity extends Activity {
             }
         });
 
-        Button buttonGoToDisplay = (Button) findViewById(R.id.buttonGoToDisplay);
         final Activity optionsActivity = this;
         buttonGoToDisplay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,6 +113,8 @@ public class OptionsActivity extends Activity {
                 startActivity(i);
             }
         });
+
+        restoreUIValues();
     }
 
 
@@ -126,7 +135,7 @@ public class OptionsActivity extends Activity {
                 options.setPath(cursor.getString(columnIndex));
                 cursor.close();
 
-                ImageView imageView = (ImageView) findViewById(R.id.imageView);
+
                 Bitmap bitmap = BitmapFactory.decodeFile(options.getPath());
                 imageView.setImageBitmap(bitmap);
                 imageView.setBackgroundColor(Color.rgb(255, 0, 0));
@@ -179,5 +188,19 @@ public class OptionsActivity extends Activity {
         options.setPath(prefs.getString(Options.SELECTED_SELECTED_IMAGE_PATH,""));
         options.setScale(prefs.getInt(Options.SELECTED_SCALE, 1));
         options.setGyroscopeEnabled(prefs.getBoolean(Options.GYROSCOPE_ENABLED,false));
+    }
+
+    private void restoreUIValues(){
+        buttonGyroscopeEnabled.setChecked(options.isGyroscopeEnabled());
+        editTextScale.setText(Integer.toString(options.getScale()));
+        try {
+            if(isStoragePermissionGranted()) {
+                Bitmap bitmap = BitmapFactory.decodeFile(options.getPath());
+                imageView.setImageBitmap(bitmap);
+            }
+        }
+        catch(Exception e){
+            Log.i("EXCEPTION",e.toString());
+        }
     }
 }
