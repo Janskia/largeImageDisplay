@@ -26,17 +26,17 @@ import android.widget.ImageView;
  */
 public class DisplayActivity extends AppCompatActivity implements SensorEventListener {
     private SensorManager senSensorManager;
-    private Sensor senAccelerometer;
+    private Sensor senAccelerometer,senGyroscope;
 
     private boolean isCalibrated=false;
     private float xCalibration;
     private float yCalibration;
     private float zCalibration;
 
-    private float xVelocity,yVelocity,xVelocity2,yVelocity2,xVelocity3,yVelocity3;
-
+    private float xVelocity,yVelocity;
 
     private float moveMultiplier = 1f;
+    private float rotationMultiplier = 1f;
     private ImageView imageView;
 
     private Options options;
@@ -46,10 +46,6 @@ public class DisplayActivity extends AppCompatActivity implements SensorEventLis
         super.onCreate(savedInstanceState);
         xVelocity=0;
         yVelocity=0;
-        xVelocity2=0;
-        yVelocity2=0;
-        xVelocity3=0;
-        yVelocity3=0;
         options = new Options();
         setContentView(R.layout.activity_display);
         Intent intent = getIntent();
@@ -67,7 +63,9 @@ public class DisplayActivity extends AppCompatActivity implements SensorEventLis
         //setup accelerometer
         senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        senGyroscope = senSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         senSensorManager.registerListener(this, senAccelerometer , SensorManager.SENSOR_DELAY_FASTEST);
+        senSensorManager.registerListener(this, senGyroscope , SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     @Override
@@ -87,6 +85,16 @@ public class DisplayActivity extends AppCompatActivity implements SensorEventLis
             Log.d("ACCEREROMETERx","acceleration x:"+x);
             MoveImage(x,y);
         }
+        if(options.isGyroscopeEnabled()){
+            if (mySensor.getType() == Sensor.TYPE_GYROSCOPE) {
+                RotateImage(sensorEvent.values[2]);
+            }
+        }
+    }
+
+    private void RotateImage(float rotation){
+        imageView.setRotation(imageView.getRotation()+rotation*rotationMultiplier);
+        //imageView.setRotationY(imageView.getRotationY()+y*rotationMultiplier);
     }
 
     private void MoveImage(float x,float y){
